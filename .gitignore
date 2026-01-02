@@ -1,0 +1,79 @@
+# =================================================================
+# == .gitignore CHUẨN MỰC CHO DỰ ÁN MACHINE LEARNING (PYTHON) ==
+# =================================================================
+
+# === 1. Dữ liệu & Model (QUAN TRỌNG NHẤT) ===
+# Lý do: Git không phải nơi lưu trữ dữ liệu lớn. Việc commit dữ liệu
+# sẽ làm repository phình to, clone cực kỳ chậm.
+# Giải pháp: Dữ liệu nên được lưu trên Google Drive, S3, hoặc dùng Git-LFS.
+
+# Bỏ qua toàn bộ dữ liệu thô và đã xử lý.
+/data/
+/test_gold/
+
+# Bỏ qua các model đã train (.pkl). Chúng có thể được tạo lại từ code.
+/models/
+
+# Bỏ qua kết quả đánh giá (ảnh, csv...).
+/evaluation_results/
+
+# Bỏ qua các folder chứa file tạm hoặc file linh tinh.
+# Nếu folder "khác" của bạn chứa file tạm thì bỏ qua nó.
+/khác/
+
+
+# === 2. Thư mục môi trường ảo (Virtual Environment) ===
+# Chứa hàng nghìn file thư viện, chỉ cần file requirements.txt là đủ.
+venv/
+.venv/
+env/
+.env/
+venv.bak/
+
+
+# === 3. File cache và file biên dịch của Python ===
+# Tự động sinh ra khi chạy code, không cần thiết phải lưu trữ.
+__pycache__/
+*.py[cod]
+*$py.class
+
+
+# === 4. Cấu hình của Editor & IDE ===
+# Mỗi người dùng một IDE khác nhau, không nên commit cấu hình cá nhân.
+.vscode/
+.idea/
+*.sublime-*
+nbproject/
+
+
+# === 5. File của Jupyter Notebook ===
+# Thư mục checkpoint tự sinh của Jupyter.
+.ipynb_checkpoints
+
+
+# === 6. File hệ điều hành (OS generated files) ===
+# File rác của macOS và Windows.
+.DS_Store
+Thumbs.db
+
+
+# === 7. File nhạy cảm (Secrets) ===
+# KHÔNG BAO GIỜ commit file chứa API key, mật khẩu, token...
+.env
+secrets.ini
+*.env
+*.env.*
+!*.env.example
+
+
+# === 8. File build và distribution ===
+# Sinh ra khi đóng gói project.
+/dist/
+/build/
+*.egg-info/
+
+
+# === 9. File log ===
+# Ghi lại quá trình chạy, không phải là code.
+*.log
+logs/
