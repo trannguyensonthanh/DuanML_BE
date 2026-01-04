@@ -14,8 +14,7 @@
 # Bỏ qua các model đã train (.pkl). Chúng có thể được tạo lại từ code.
 /models/
 
-# Bỏ qua kết quả đánh giá (ảnh, csv...).
-/evaluation_results/
+
 
 # Bỏ qua các folder chứa file tạm hoặc file linh tinh.
 # Nếu folder "khác" của bạn chứa file tạm thì bỏ qua nó.
