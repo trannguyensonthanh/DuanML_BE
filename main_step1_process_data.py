@@ -15,7 +15,7 @@ def main():
     PROCESSED_DATA_DIR = "data/processed" 
     
     # 1. Khởi tạo bộ tiền xử lý (Target size 128x128 là chuẩn vàng cho HOG/SVM)
-    preprocessor = ImagePreprocessor(target_size=(128, 128), use_clahe=True)
+    preprocessor = ImagePreprocessor(target_size=(128, 128), use_clahe=False)
 
     # 2. Khởi tạo bộ nạp dữ liệu
     loader = YoloDataLoader(

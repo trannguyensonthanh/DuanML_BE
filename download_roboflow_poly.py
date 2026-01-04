@@ -12,7 +12,7 @@ from tqdm import tqdm
 ROBOFLOW_API_KEY = "y93DQO776X6XaMTJSuka"
 
 # 2. Thư mục gốc để lưu dữ liệu tải về
-DEST_ROOT = "D:\\Download\\learningdocument\\machine learning\\DuAnML\\test_gold"
+DEST_ROOT = "data/raw"
 
 # 3. Cấu hình 4 dự án tương ứng với 4 lớp
 PROJECTS_CONFIG = [
@@ -66,7 +66,7 @@ def flatten_dataset(downloaded_path, target_path):
     Nó đi vào cấu trúc lằng nhằng của Roboflow (train/images, valid/labels...)
     và lôi tất cả ra, ném chung vào target_path.
     """
-    sub_dirs = ['test']
+    sub_dirs = ['train']
     
     print(f"   ↳ Đang gộp dữ liệu từ {downloaded_path} sang {target_path}...")
     

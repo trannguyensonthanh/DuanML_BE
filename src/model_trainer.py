@@ -118,7 +118,7 @@ class TrashClassifier:
             logger.info("🚀 Đang tinh chỉnh SVM...")
             svm_pipeline = Pipeline([('scaler', StandardScaler()), ('pca', PCA(n_components=0.98)), ('clf', SVC(probability=True, class_weight='balanced'))])
             svm_param_grid = {'clf__C': [10, 100, 500], 'clf__gamma': ['scale', 0.01]}
-            svm_grid = GridSearchCV(svm_pipeline, svm_param_grid, cv=3, n_jobs=-1, verbose=0, scoring='f1_macro')
+            svm_grid = GridSearchCV(svm_pipeline, svm_param_grid, cv=2, n_jobs=-1, verbose=0, scoring='f1_macro')
         
             with tqdm_joblib(desc="Tuning SVM", total=len(svm_grid.param_grid) * svm_grid.cv) as progress_bar:
                 svm_grid.fit(X_train, y_train)          
@@ -137,7 +137,7 @@ class TrashClassifier:
             logger.info("🚀 Đang tinh chỉnh Random Forest...")
             rf_pipeline = Pipeline([('clf', RandomForestClassifier(random_state=42))])
             rf_param_grid = {'clf__n_estimators': [200, 300, 400], 'clf__max_depth': [20, None], 'clf__class_weight': ['balanced', None]}
-            rf_grid = GridSearchCV(rf_pipeline, rf_param_grid, cv=3, n_jobs=-1, verbose=0, scoring='f1_macro')
+            rf_grid = GridSearchCV(rf_pipeline, rf_param_grid, cv=2, n_jobs=-1, verbose=0, scoring='f1_macro')
             
             with tqdm_joblib(desc="Tuning RF", total=len(rf_grid.param_grid) * rf_grid.cv) as progress_bar:
                 rf_grid.fit(X_train, y_train)     
@@ -156,7 +156,7 @@ class TrashClassifier:
             logger.info("🚀 Đang tinh chỉnh XGBoost trên GPU...")
             xgb_pipeline = Pipeline([('clf', XGBClassifier(eval_metric='mlogloss', random_state=42, tree_method='hist', n_jobs=-1))])
             xgb_param_grid = {'clf__n_estimators': [200, 300], 'clf__learning_rate': [0.1, 0.05], 'clf__max_depth': [5, 7], 'clf__subsample': [0.8], 'clf__colsample_bytree': [0.8]}
-            xgb_grid = GridSearchCV(xgb_pipeline, xgb_param_grid, cv=3, n_jobs=-1, verbose=0, scoring='f1_macro')
+            xgb_grid = GridSearchCV(xgb_pipeline, xgb_param_grid, cv=2, n_jobs=-1, verbose=0, scoring='f1_macro')
             
             with tqdm_joblib(desc="Tuning XGBoost", total=len(xgb_grid.param_grid) * xgb_grid.cv) as progress_bar:
                 xgb_grid.fit(X_train, y_train)

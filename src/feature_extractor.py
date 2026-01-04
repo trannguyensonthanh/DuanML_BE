@@ -1,105 +1,62 @@
 # src/feature_extractor.py
 import cv2
 import numpy as np
-import mahotas # <-- Thư viện mới, cực mạnh cho Haralick
-from skimage.feature import hog, local_binary_pattern
+import torch
+import torch.nn as nn
+from torchvision import models, transforms
+from PIL import Image
+
 
 class FeatureExtractor:
     def __init__(self):
-        # HOG configuration
-        self.hog_orientations = 9
-        self.hog_pixels_per_cell = (8, 8)
-        self.hog_cells_per_block = (2, 2)
-        
-        # LBP configuration
-        self.lbp_points = 24
-        self.lbp_radius = 8 # Tăng bán kính để nhìn được kết cấu lớn hơn
+        # 1. Thiết lập thiết bị (GPU nếu có, ngược lại là CPU)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"⏳ Đang tải ResNet50 (PyTorch) trên thiết bị: {self.device}...")
 
-    def compute_color_moments(self, image):
-        """
-        Tính Color Moments trên không gian màu HSV.
-        Nắm bắt các thuộc tính thống kê cốt lõi của màu sắc.
-        """
-        # Chuyển sang HSV
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        
-        # Tách các kênh Hue, Saturation, Value
-        h, s, v = cv2.split(hsv)
-        channels = [h, s, v]
-        
-        features = []
-        for channel in channels:
-            # Chỉ tính toán trên các pixel không phải màu đen (vật thể thực sự)
-            mask = channel > 0
-            if np.any(mask):
-                pixels = channel[mask]
-                # Tính 4 moments: Mean, Std Dev, Skewness, Kurtosis
-                mean = np.mean(pixels)
-                std = np.std(pixels)
-                
-                # Để tránh lỗi chia cho 0, tính skew và kurtosis một cách an toàn
-                skew = np.mean(((pixels - mean) / (std + 1e-6))**3) if std > 1e-6 else 0
-                kurtosis = np.mean(((pixels - mean) / (std + 1e-6))**4) if std > 1e-6 else 0
-                
-                features.extend([mean, std, skew, kurtosis])
-            else:
-                # Nếu kênh rỗng (ví dụ ảnh xám), thêm 4 số 0
-                features.extend([0, 0, 0, 0])
-        
-        # Trả về 12 đặc trưng (4 moments x 3 kênh)
-        return np.array(features)
-        
-    def compute_haralick(self, gray_img):
-        """
-        Haralick Texture Features.
-        Cực kỳ mạnh để phân biệt bề mặt nhám (giấy), bóng (nhựa), gồ ghề (hữu cơ).
-        """
-        # Tính toán Haralick textures, trả về 13 đặc trưng
-        haralick_features = mahotas.features.haralick(gray_img).mean(axis=0)
-        return haralick_features
+        weights = models.ResNet50_Weights.DEFAULT
+        resnet = models.resnet50(weights=weights)
 
-    def compute_hog(self, gray_img):
-        """HOG Shape descriptor"""
-        fd = hog(gray_img, 
-                 orientations=self.hog_orientations,
-                 pixels_per_cell=self.hog_pixels_per_cell,
-                 cells_per_block=self.hog_cells_per_block,
-                 block_norm='L2-Hys', 
-                 visualize=False)
-        return fd
 
-    def compute_lbp(self, gray_img):
-        """LBP Texture descriptor (giữ nguyên logic, tinh chỉnh tham số ở __init__)"""
-        lbp = local_binary_pattern(gray_img, self.lbp_points, self.lbp_radius, method="uniform")
-        (hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, self.lbp_points + 3), range=(0, self.lbp_points + 2))
-        
-        hist = hist.astype("float")
-        hist /= (hist.sum() + 1e-7)
-        return hist
+        self.model = nn.Sequential(*list(resnet.children())[:-1])
 
-    def extract(self, image):
-        """
-        [PIPELINE TRÍCH XUẤT ĐẶC TRƯNG]
-        """
-        if image is None: return None
-        
-        # Tạo ảnh xám chỉ một lần
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
-        # 1. HOG (Biên dạng)
-        hog_feat = self.compute_hog(gray)
-        
-        # 2. Color Moments (Màu sắc Thống kê)
-        color_feat = self.compute_color_moments(image)
-        
-        # 3. LBP (Kết cấu Cục bộ)
-        lbp_feat = self.compute_lbp(gray)
-        
-        # 4. Haralick (Kết cấu Toàn cục)
-        haralick_feat = self.compute_haralick(gray)
-        
-        # Hợp nhất tất cả (Feature Fusion)
-        # Bỏ Hu Moments vì HOG đã làm tốt hơn về hình dáng và Haralick mạnh hơn về kết cấu
-        final_vector = np.hstack([hog_feat, color_feat, lbp_feat, haralick_feat])
-        
-        return final_vector
+        self.model.to(self.device)
+        self.model.eval()
+
+        print("✅ Đã tải xong ResNet50!")
+
+        self.clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+
+        self.preprocess = transforms.Compose([
+            transforms.ToTensor(),  # Chuyển từ numpy/PIL (0-255) sang Tensor (0-1) và đổi chiều (HWC -> CHW)
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225]),
+        ])
+
+    def apply_clahe(self, img):
+        lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        l_clahe = self.clahe.apply(l)
+        result = cv2.merge((l_clahe, a, b))
+        return cv2.cvtColor(result, cv2.COLOR_LAB2BGR)
+
+    def extract(self, img):
+        if img is None: return None
+
+
+        img = cv2.resize(img, (224, 224))
+
+        img = self.apply_clahe(img)
+
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+
+        input_tensor = self.preprocess(img)
+
+        input_batch = input_tensor.unsqueeze(0)
+
+        input_batch = input_batch.to(self.device)
+
+        with torch.no_grad():
+            features = self.model(input_batch)
+
+        return features.cpu().numpy().flatten()
