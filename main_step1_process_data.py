@@ -1,6 +1,5 @@
 # main_step1_process_data.py
 import sys
-# Thêm đường dẫn để python hiểu src module
 sys.path.append("./src")
 
 from src.preprocessor import ImagePreprocessor
@@ -12,8 +11,8 @@ def main():
     logger.info("🚀 KHỞI ĐỘNG DỰ ÁN PHÂN LOẠI RÁC THẢI (ML PIPELINE)")
 
     # --- CẤU HÌNH ---
-    RAW_DATA_DIR = "data/raw"          # Folder chứa dữ liệu gốc của bạn
-    PROCESSED_DATA_DIR = "data/processed" # Folder chứa ảnh sau khi xử lý
+    RAW_DATA_DIR = "data/raw"         
+    PROCESSED_DATA_DIR = "data/processed" 
     
     # 1. Khởi tạo bộ tiền xử lý (Target size 128x128 là chuẩn vàng cho HOG/SVM)
     preprocessor = ImagePreprocessor(target_size=(128, 128), use_clahe=True)

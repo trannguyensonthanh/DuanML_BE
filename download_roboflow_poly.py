@@ -8,39 +8,37 @@ from tqdm import tqdm
 # ⚙️ CẤU HÌNH DỰ ÁN (USER CONFIGURATION)
 # ==================================================================================
 
-# 1. API KEY của bạn (Lấy trong Settings của Roboflow)
+# 1. API KEY của bạn
 ROBOFLOW_API_KEY = "y93DQO776X6XaMTJSuka"
 
 # 2. Thư mục gốc để lưu dữ liệu tải về
-# (Nên để là 'dataset_raw' hoặc 'data/raw' theo cấu trúc dự án của chúng ta)
 DEST_ROOT = "D:\\Download\\learningdocument\\machine learning\\DuAnML\\test_gold"
 
 # 3. Cấu hình 4 dự án tương ứng với 4 lớp
-# Bạn hãy thay 'workspace', 'project_id', và 'version' bằng thông tin thật của bạn
 PROJECTS_CONFIG = [
     {
-        "target_folder_name": "metal",      # Tên folder sẽ tạo trong DEST_ROOT
-        "workspace": "sonthanhhh", # Ví dụ: 'vladimir-1sjvb'
-        "project_id": "metal-trash-v2",    # Ví dụ: 'metal-waste'
-        "version": 2                 # Phiên bản dataset muốn tải
+        "target_folder_name": "metal",    
+        "workspace": "sonthanhhh", 
+        "project_id": "metal-trash-v2",  
+        "version": 3             
     },
     {
         "target_folder_name": "plastic",
         "workspace": "sonthanhhh",
         "project_id": "plastic-trash-v2",
-        "version": 2
+        "version": 3
     },
     {
         "target_folder_name": "paper",
         "workspace": "sonthanhhh",
         "project_id": "paper-trash-v2",
-        "version": 2
+        "version": 3
     },
     {
         "target_folder_name": "organic",
         "workspace": "sonthanhhh",
         "project_id": "organic-trash-v2",
-        "version": 2
+        "version": 3
     },
 ]
 
@@ -68,7 +66,6 @@ def flatten_dataset(downloaded_path, target_path):
     Nó đi vào cấu trúc lằng nhằng của Roboflow (train/images, valid/labels...)
     và lôi tất cả ra, ném chung vào target_path.
     """
-    # sub_dirs = ['train', 'valid', 'test']
     sub_dirs = ['test']
     
     print(f"   ↳ Đang gộp dữ liệu từ {downloaded_path} sang {target_path}...")
@@ -94,7 +91,7 @@ def flatten_dataset(downloaded_path, target_path):
             # --- TRƯỜNG HỢP TÁCH RIÊNG ---
             images = glob.glob(os.path.join(img_src_dir, "*.*"))
             for img_path in images:
-                if img_path.endswith(".txt"): continue # Bỏ qua nếu lỡ có file txt lạc vào
+                if img_path.endswith(".txt"): continue
                 
                 # Tìm file nhãn tương ứng
                 base_name = os.path.splitext(os.path.basename(img_path))[0]
@@ -149,10 +146,6 @@ def main():
         try:
             project = rf.workspace(ws).project(prj)
             version = project.version(ver)
-            
-            # --- QUAN TRỌNG NHẤT: FORMAT POLYGON ---
-            # 'yolov8-segmentation' là format trả về tọa độ đa giác (x1 y1 x2 y2...)
-            # Đây là format chuẩn để dùng với data_loader mới của chúng ta
             dataset = version.download("yolov8") 
             
             downloaded_path = dataset.location
@@ -163,16 +156,12 @@ def main():
 
         # 2. Tạo thư mục đích (vd: data/raw/metal)
         final_dest_path = os.path.join(DEST_ROOT, target_name)
-        
-        # Nếu muốn tải lại sạch sẽ, xóa folder cũ đi (cẩn thận nếu có dữ liệu tự chụp trong đó)
-        # Ở đây tôi chỉ tạo mới nếu chưa có, hoặc gộp vào.
         create_dir(final_dest_path)
 
         # 3. Gộp và chuyển file
         count = flatten_dataset(downloaded_path, final_dest_path)
         print(f"✅ Đã chuyển {count} cặp ảnh/nhãn vào: {final_dest_path}")
         
-        # 4. Dọn dẹp folder tạm (folder mà roboflow tải về)
         try:
             shutil.rmtree(downloaded_path)
             print("🧹 Đã dọn dẹp thư mục tạm.")

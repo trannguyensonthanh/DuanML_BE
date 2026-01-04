@@ -29,7 +29,7 @@ class GoldEvaluator:
         ensure_dir(self.error_dir)
         ensure_dir(self.plots_dir)
 
-        # 1. Load Model Pipeline (Đã bao gồm Scaler + PCA + SVC bên trong)
+        # 1. Load Model Pipeline
         logger.info(f"⏳ Đang tải 'brain' (Model) từ: {model_path}")
         if not os.path.exists(model_path) or not os.path.exists(encoder_path):
             raise FileNotFoundError("CRITICAL ERROR: Không tìm thấy model. Hãy train trước!")
@@ -38,7 +38,7 @@ class GoldEvaluator:
         self.le = joblib.load(encoder_path)
         self.classes = self.le.classes_
         
-        # 2. Khởi tạo bộ xử lý ảnh (Đồng bộ logic với Training)
+        # 2. Khởi tạo bộ xử lý ảnh
         self.extractor = FeatureExtractor()
         # Lưu ý: Target size phải KHỚP 100% với lúc train (128x128)
         self.preprocessor = ImagePreprocessor(target_size=(128, 128), use_clahe=True)
@@ -48,7 +48,7 @@ class GoldEvaluator:
         try:
             parts = list(map(float, line.strip().split()))
             coords = parts[1:] # Bỏ class_id
-            if len(coords) < 6: return None # Ít nhất 3 điểm
+            if len(coords) < 6: return None
             points = []
             for i in range(0, len(coords), 2):
                 x = int(coords[i] * img_w)
@@ -69,7 +69,7 @@ class GoldEvaluator:
         # Bitwise AND để xóa nền
         masked_img = cv2.bitwise_and(img, img, mask=mask)
         
-        # Cắt khung hình chữ nhật bao quanh polygon (Bounding Rect)
+        # Cắt khung hình chữ nhật bao quanh polygon
         x, y, w, h = cv2.boundingRect(polygon)
         crop = masked_img[y:y+h, x:x+w]
         return crop
@@ -133,7 +133,7 @@ class GoldEvaluator:
                     pred_label_str = self.le.inverse_transform([pred_idx])[0]
                     confidence = probs[pred_idx]
                     
-                    # Lấy Top-2 Prediction (Để xem nếu sai thì đáp án đúng có gần đó không)
+                    # Lấy Top-2 Prediction
                     top2_idx = np.argsort(probs)[-2:][::-1] # Lấy 2 index cao nhất
                     top2_labels = self.le.inverse_transform(top2_idx)
                     

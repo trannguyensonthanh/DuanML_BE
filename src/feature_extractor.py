@@ -6,18 +6,18 @@ from skimage.feature import hog, local_binary_pattern
 
 class FeatureExtractor:
     def __init__(self):
-        # HOG configuration (giữ nguyên)
+        # HOG configuration
         self.hog_orientations = 9
         self.hog_pixels_per_cell = (8, 8)
         self.hog_cells_per_block = (2, 2)
         
-        # LBP configuration (tối ưu hóa)
+        # LBP configuration
         self.lbp_points = 24
         self.lbp_radius = 8 # Tăng bán kính để nhìn được kết cấu lớn hơn
 
     def compute_color_moments(self, image):
         """
-        [NÂNG CẤP VƯỢT TRỘI] Tính Color Moments trên không gian màu HSV.
+        Tính Color Moments trên không gian màu HSV.
         Nắm bắt các thuộc tính thống kê cốt lõi của màu sắc.
         """
         # Chuyển sang HSV
@@ -51,7 +51,7 @@ class FeatureExtractor:
         
     def compute_haralick(self, gray_img):
         """
-        [MỚI - ĐẲNG CẤP] Haralick Texture Features.
+        Haralick Texture Features.
         Cực kỳ mạnh để phân biệt bề mặt nhám (giấy), bóng (nhựa), gồ ghề (hữu cơ).
         """
         # Tính toán Haralick textures, trả về 13 đặc trưng
@@ -59,7 +59,7 @@ class FeatureExtractor:
         return haralick_features
 
     def compute_hog(self, gray_img):
-        """HOG Shape descriptor (giữ nguyên)"""
+        """HOG Shape descriptor"""
         fd = hog(gray_img, 
                  orientations=self.hog_orientations,
                  pixels_per_cell=self.hog_pixels_per_cell,
@@ -79,7 +79,7 @@ class FeatureExtractor:
 
     def extract(self, image):
         """
-        [PIPELINE TRÍCH XUẤT ĐẶC TRƯNG PHIÊN BẢN MỚI]
+        [PIPELINE TRÍCH XUẤT ĐẶC TRƯNG]
         """
         if image is None: return None
         
@@ -89,13 +89,13 @@ class FeatureExtractor:
         # 1. HOG (Biên dạng)
         hog_feat = self.compute_hog(gray)
         
-        # 2. [MỚI] Color Moments (Màu sắc Thống kê)
+        # 2. Color Moments (Màu sắc Thống kê)
         color_feat = self.compute_color_moments(image)
         
         # 3. LBP (Kết cấu Cục bộ)
         lbp_feat = self.compute_lbp(gray)
         
-        # 4. [MỚI] Haralick (Kết cấu Toàn cục)
+        # 4. Haralick (Kết cấu Toàn cục)
         haralick_feat = self.compute_haralick(gray)
         
         # Hợp nhất tất cả (Feature Fusion)

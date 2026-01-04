@@ -5,10 +5,9 @@ from src.evaluator import GoldEvaluator
 
 def main():
     # --- CẤU HÌNH ---
-    # MODEL_PATH = "models/best_model.pkl"
-    MODEL_PATH = "models/best_tuned_ensemble_model.pkl"
+    MODEL_PATH = "models/stacking_model.pkl"
     ENCODER_PATH = "models/label_encoder.pkl"
-    TEST_DATA_DIR = "test_gold"       # Folder chứa ảnh Polygon test
+    TEST_DATA_DIR = "test_gold"
     OUTPUT_REPORT_DIR = "evaluation_results"
     
     print("🕵️ KHỞI ĐỘNG HỆ THỐNG KIỂM THỬ ĐẲNG CẤP (POLYGON MODE)...")

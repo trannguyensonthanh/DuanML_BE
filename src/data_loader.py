@@ -100,7 +100,7 @@ class YoloDataLoader:
                     polygon = self._parse_polygon(line, w_img, h_img)
                     if polygon is None: continue
 
-                    # --- QUAN TRỌNG: CẮT VÀ TÁCH NỀN ---
+                    # --- CẮT VÀ TÁCH NỀN ---
                     try:
                         crop_masked = self._crop_and_mask(img, polygon)
                     except Exception as e:

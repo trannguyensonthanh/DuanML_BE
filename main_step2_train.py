@@ -5,7 +5,7 @@ from src.model_trainer import TrashClassifier
 
 def main():
     # --- CẤU HÌNH ---
-    PROCESSED_DATA_DIR = "data/processed" # Phải khớp với output của bước 1
+    PROCESSED_DATA_DIR = "data/processed"
     
     print("🤖 KHỞI ĐỘNG TRAINER AI...")
     
